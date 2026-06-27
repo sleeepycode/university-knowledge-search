@@ -11,6 +11,11 @@ from backend.app.services.document_upload import (
     save_document,
     validate_and_measure_file,
 )
+from backend.app.services.search_index import (
+    SearchIndexUnavailableError,
+    index_document_chunks,
+    search_index_error,
+)
 
 router = APIRouter()
 DatabaseSession = Annotated[AsyncSession, Depends(get_db_session)]
@@ -39,6 +44,10 @@ async def upload_document(
         upload_dir=settings.upload_dir,
         session=session,
     )
+    try:
+        await index_document_chunks(document, processing_result.chunks)
+    except SearchIndexUnavailableError as error:
+        raise search_index_error() from error
 
     return DocumentUploadResponse(
         id=document.id,

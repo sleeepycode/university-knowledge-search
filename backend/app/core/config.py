@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     upload_dir: Path = Path("uploads")
     chunk_size: int = 1000
     chunk_overlap: int = 100
+    elasticsearch_url: str = "http://localhost:9200"
+    elasticsearch_index: str = "documents"
 
     postgres_host: str = "localhost"
     postgres_port: int = 5432

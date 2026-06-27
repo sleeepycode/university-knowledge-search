@@ -44,6 +44,10 @@ def test_upload_pdf(monkeypatch) -> None:
             )
         ),
     )
+    monkeypatch.setattr(
+        "backend.app.api.v1.documents.index_document_chunks",
+        AsyncMock(),
+    )
 
     response = client.post(
         "/api/v1/documents/upload",
@@ -85,6 +89,10 @@ def test_upload_docx(monkeypatch) -> None:
                 created_at=datetime.now(UTC),
             )
         ),
+    )
+    monkeypatch.setattr(
+        "backend.app.api.v1.documents.index_document_chunks",
+        AsyncMock(),
     )
 
     response = client.post(
