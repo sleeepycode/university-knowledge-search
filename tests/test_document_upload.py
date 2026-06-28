@@ -9,6 +9,7 @@ from backend.app.core.config import settings
 from backend.app.db.session import get_db_session
 from backend.app.main import app
 from backend.app.services.document_processing import ProcessingResult
+from backend.app.services.text_chunker import TextChunk
 
 
 async def override_db_session():
@@ -28,7 +29,13 @@ def test_upload_pdf(monkeypatch) -> None:
         AsyncMock(
             return_value=ProcessingResult(
                 text="PDF document text",
-                chunks=["PDF document text"],
+                chunks=[
+                    TextChunk(
+                        chunk_number=1,
+                        page_number=1,
+                        text="PDF document text",
+                    )
+                ],
             )
         ),
     )
@@ -74,7 +81,13 @@ def test_upload_docx(monkeypatch) -> None:
         AsyncMock(
             return_value=ProcessingResult(
                 text="DOCX document text",
-                chunks=["DOCX document text"],
+                chunks=[
+                    TextChunk(
+                        chunk_number=1,
+                        page_number=1,
+                        text="DOCX document text",
+                    )
+                ],
             )
         ),
     )

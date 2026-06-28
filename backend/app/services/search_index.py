@@ -5,14 +5,42 @@ from fastapi import HTTPException, status
 
 from backend.app.core.config import settings
 from backend.app.models.document import Document
+from backend.app.services.text_chunker import TextChunk
 
 INDEX_MAPPING: dict[str, Any] = {
+    "settings": {
+        "analysis": {
+            "filter": {
+                "russian_stop": {
+                    "type": "stop",
+                    "stopwords": "_russian_",
+                },
+                "russian_stemmer": {
+                    "type": "stemmer",
+                    "language": "russian",
+                },
+            },
+            "analyzer": {
+                "analysis-ru": {
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "russian_stop",
+                        "russian_stemmer",
+                    ],
+                }
+            },
+        }
+    },
     "mappings": {
         "properties": {
-            "document_uuid": {"type": "keyword"},
+            "chunk_id": {"type": "keyword"},
             "file_name": {"type": "text"},
-            "chunk_number": {"type": "integer"},
-            "text": {"type": "text"},
+            "page_number": {"type": "integer"},
+            "text": {
+                "type": "text",
+                "analyzer": "analysis-ru",
+            },
         }
     }
 }
@@ -62,20 +90,21 @@ async def ensure_documents_index() -> None:
 
 async def index_document_chunks(
     document: Document,
-    chunks: list[str],
+    chunks: list[TextChunk],
 ) -> None:
     await ensure_documents_index()
     client = get_search_client()
 
     try:
-        for chunk_number, chunk in enumerate(chunks, start=1):
+        for chunk in chunks:
+            chunk_id = f"{document.uuid}:{chunk.chunk_number}"
             response = await client.put(
-                f"/{settings.elasticsearch_index}/_doc/{document.uuid}:{chunk_number}",
+                f"/{settings.elasticsearch_index}/_doc/{chunk_id}",
                 json={
-                    "document_uuid": str(document.uuid),
+                    "chunk_id": chunk_id,
                     "file_name": document.file_name,
-                    "chunk_number": chunk_number,
-                    "text": chunk,
+                    "page_number": chunk.page_number,
+                    "text": chunk.text,
                 },
             )
             response.raise_for_status()
@@ -96,7 +125,7 @@ async def search_documents(query: str) -> list[dict[str, Any]]:
                 "query": {
                     "multi_match": {
                         "query": query,
-                        "fields": ["text", "file_name"],
+                        "fields": ["text"],
                     }
                 }
             },
@@ -110,9 +139,9 @@ async def search_documents(query: str) -> list[dict[str, Any]]:
     response_body = response.json()
     return [
         {
-            "document_uuid": hit["_source"]["document_uuid"],
+            "chunk_id": hit["_source"]["chunk_id"],
             "file_name": hit["_source"]["file_name"],
-            "chunk_number": hit["_source"]["chunk_number"],
+            "page": hit["_source"]["page_number"],
             "text": hit["_source"]["text"],
             "score": hit["_score"],
         }

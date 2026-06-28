@@ -1,3 +1,13 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, slots=True)
+class TextChunk:
+    chunk_number: int
+    page_number: int
+    text: str
+
+
 def split_text_into_chunks(
     text: str,
     chunk_size: int = 1000,
@@ -25,5 +35,29 @@ def split_text_into_chunks(
         if end == len(normalized_text):
             break
         start += step
+
+    return chunks
+
+
+def split_pages_into_chunks(
+    pages: list[tuple[int, str]],
+    chunk_size: int = 1000,
+    overlap: int = 100,
+) -> list[TextChunk]:
+    chunks: list[TextChunk] = []
+
+    for page_number, page_text in pages:
+        for chunk_text in split_text_into_chunks(
+            text=page_text,
+            chunk_size=chunk_size,
+            overlap=overlap,
+        ):
+            chunks.append(
+                TextChunk(
+                    chunk_number=len(chunks) + 1,
+                    page_number=page_number,
+                    text=chunk_text,
+                )
+            )
 
     return chunks

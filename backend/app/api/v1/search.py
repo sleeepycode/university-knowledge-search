@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from backend.app.schemas.search import SearchResponse
+from backend.app.schemas.search import SearchResult
 from backend.app.services.search_index import (
     SearchIndexUnavailableError,
     search_documents,
@@ -12,7 +12,7 @@ from backend.app.services.search_index import (
 router = APIRouter()
 
 
-@router.get("", response_model=SearchResponse)
+@router.get("", response_model=list[SearchResult])
 async def search(
     q: Annotated[
         str,
@@ -21,10 +21,10 @@ async def search(
             description="Search query",
         ),
     ],
-) -> SearchResponse:
+) -> list[SearchResult]:
     try:
         results = await search_documents(q)
     except SearchIndexUnavailableError as error:
         raise search_index_error() from error
 
-    return SearchResponse(query=q, results=results)
+    return results
