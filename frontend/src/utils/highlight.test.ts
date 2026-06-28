@@ -23,3 +23,14 @@ describe("getStatusLabel", () => {
     expect(getStatusLabel("indexing")).toBe("Индексация...");
   });
 });
+
+test("returns original text when query is empty", () => {
+  const result = highlightQuery("Some text", "");
+  expect(result).toBe("Some text");
+});
+
+test("escapes HTML characters", () => {
+  const result = highlightQuery("<script>alert('xss')</script>", "script");
+  expect(result).toContain("&lt;script&gt;");
+  expect(result).toContain("alert('xss')");
+});

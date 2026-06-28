@@ -1,9 +1,8 @@
-
-import { FormEvent, useEffect, useState } from "react";
+// src/pages/SearchPage.tsx
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import type { SearchHistoryItem, SearchResponse } from "../api/client";
-import { fetchSearchHistory, searchDocuments, HttpError } from "../api/client";
+import { fetchSearchHistory, searchDocuments } from "../api/client";
 import { Pagination, SearchResultCard } from "../components/SearchResult";
-import { ErrorDisplay } from "../components/ErrorDisplay"; 
 
 const PAGE_SIZE = 10;
 
@@ -13,38 +12,50 @@ export default function SearchPage() {
   const [page, setPage] = useState(1);
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | HttpError | string | null>(null); 
+  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
+  // Загрузка истории при монтировании
   useEffect(() => {
     void fetchSearchHistory()
       .then(setHistory)
       .catch(() => setHistory([]));
   }, []);
 
-  useEffect(() => {
-    if (!submittedQuery.trim()) {
+  // Основная функция поиска
+  const runSearch = useCallback(async () => {
+    const trimmedQuery = submittedQuery.trim();
+    if (!trimmedQuery) {
       return;
     }
 
-    const runSearch = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await searchDocuments(submittedQuery, page, PAGE_SIZE);
-        setResults(data);
-        const historyData = await fetchSearchHistory();
-        setHistory(historyData);
-      } catch (err) {
-        setError(err instanceof Error ? err : "Ошибка поиска");
-        setResults(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setError(null);
 
-    void runSearch();
+    try {
+      const data = await searchDocuments(trimmedQuery, page, PAGE_SIZE);
+      setResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка поиска");
+      setResults(null);
+      return;
+    } finally {
+      setLoading(false);
+    }
+
+    // Загружаем историю отдельно, чтобы ошибка истории не ломала результаты поиска
+    try {
+      const historyData = await fetchSearchHistory();
+      setHistory(historyData);
+    } catch {
+      // История не загрузилась — игнорируем
+    }
   }, [submittedQuery, page]);
+
+  // Запуск поиска при изменении запроса или страницы
+  useEffect(() => {
+    void runSearch();
+  }, [runSearch]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -53,8 +64,13 @@ export default function SearchPage() {
   };
 
   const handleRetry = () => {
-    setError(null);
-    setSubmittedQuery(query.trim());
+    void runSearch();
+  };
+
+  const handleHistoryClick = (historyQuery: string) => {
+    setQuery(historyQuery);
+    setSubmittedQuery(historyQuery);
+    setPage(1);
   };
 
   return (
@@ -89,11 +105,7 @@ export default function SearchPage() {
                 <button
                   type="button"
                   className="history__item"
-                  onClick={() => {
-                    setQuery(item.query);
-                    setSubmittedQuery(item.query);
-                    setPage(1);
-                  }}
+                  onClick={() => handleHistoryClick(item.query)}
                 >
                   {item.query}
                 </button>
@@ -104,17 +116,23 @@ export default function SearchPage() {
       )}
 
       {loading && <div className="card">Поиск...</div>}
-      
 
-      {error && <ErrorDisplay error={error} onRetry={handleRetry} />}
+      {error && (
+        <div className="card error-text">
+          <p>{error}</p>
+          <button type="button" className="button button--secondary" onClick={handleRetry}>
+            Попробовать снова
+          </button>
+        </div>
+      )}
 
-      {!loading && submittedQuery && results && results.total === 0 && (
+      {!loading && !error && submittedQuery && results && results.total === 0 && (
         <div className="card empty-state">
           По вашему запросу ничего не найдено. Попробуйте изменить формулировку
         </div>
       )}
 
-      {!loading && results && results.results.length > 0 && (
+      {!loading && !error && results && results.results.length > 0 && (
         <>
           <p className="results-meta">
             Найдено: {results.total}. Страница {results.page} из{" "}

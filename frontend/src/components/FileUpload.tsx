@@ -21,11 +21,11 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
-  const [globalError, setGlobalError] = useState<Error | HttpError | string | null>(null); // ← ДОБАВЬТЕ
+  const [globalError, setGlobalError] = useState<Error | HttpError | string | null>(null); 
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
-      setGlobalError(null); // ← ОЧИЩАЕМ ОШИБКУ ПРИ НОВОЙ ЗАГРУЗКЕ
+      setGlobalError(null); 
       
       const fileArray = Array.from(files).filter((file) => {
         const name = file.name.toLowerCase();
@@ -77,7 +77,6 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
           let errorMessage = "Ошибка загрузки";
 
           if (error instanceof HttpError) {
-            // Детальная обработка по статусу
             if (error.status === 400) {
               errorMessage = "Файл не прошел валидацию: " + error.message;
             } else if (error.status === 409) {
