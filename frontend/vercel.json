@@ -1,6 +1,6 @@
 {
-  "installCommand": "npm install -g bun && bun install",
-  "buildCommand": "bun run build",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "routes": [
