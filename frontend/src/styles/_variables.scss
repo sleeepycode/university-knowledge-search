@@ -1,0 +1,27 @@
+$color-primary: #2563eb;
+$color-primary-dark: #1d4ed8;
+$color-bg: #f8fafc;
+$color-surface: #ffffff;
+$color-text: #0f172a;
+$color-muted: #64748b;
+$color-border: #e2e8f0;
+$color-success: #16a34a;
+$color-warning: #ca8a04;
+$color-danger: #dc2626;
+$color-highlight: #fef08a;
+$radius: 12px;
+$shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+$container-width: 960px;
+
+@mixin card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 1.25rem;
+}
+
+@mixin focus-ring {
+  outline: 2px solid rgba($color-primary, 0.35);
+  outline-offset: 2px;
+}
