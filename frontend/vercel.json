@@ -1,15 +1,8 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist",
-        "installCommand": "bun install",
-        "buildCommand": "bun run build"
-      }
-    }
-  ],
+  "installCommand": "curl -fsSL https://bun.sh/install | bash && bun install",
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "routes": [
     {
       "src": "/(.*)",
