@@ -66,3 +66,17 @@ async def save_document(
         raise
     finally:
         await file.close()
+
+
+async def delete_saved_document(
+    document: Document,
+    session: AsyncSession,
+) -> None:
+    try:
+        await session.delete(document)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        Path(document.file_path).unlink(missing_ok=True)

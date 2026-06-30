@@ -7,3 +7,11 @@ class SearchResult(BaseModel):
     page: int
     text: str
     score: float
+
+
+class SearchResponse(BaseModel):
+    query: str
+    total: int
+    page: int
+    page_size: int
+    results: list[SearchResult]

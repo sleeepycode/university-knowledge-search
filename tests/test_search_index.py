@@ -22,7 +22,9 @@ def test_documents_index_mapping_uses_russian_analyzer() -> None:
 
 
 @pytest.mark.anyio
-async def test_search_documents_uses_multi_match_by_text(monkeypatch) -> None:
+async def test_search_documents_uses_multi_match_by_text_and_pagination(
+    monkeypatch,
+) -> None:
     captured_body = {}
 
     class FakeClient:
@@ -36,16 +38,29 @@ async def test_search_documents_uses_multi_match_by_text(monkeypatch) -> None:
             captured_body.update(json)
             return SimpleNamespace(
                 raise_for_status=lambda: None,
-                json=lambda: {"hits": {"hits": []}},
+                json=lambda: {"hits": {"total": {"value": 25}, "hits": []}},
             )
 
     monkeypatch.setattr(search_index, "get_search_client", lambda: FakeClient())
 
-    await search_index.search_documents("python")
+    result = await search_index.search_documents(
+        "python",
+        page=3,
+        page_size=10,
+    )
 
+    assert captured_body["from"] == 20
+    assert captured_body["size"] == 10
     assert captured_body["query"] == {
         "multi_match": {
             "query": "python",
             "fields": ["text"],
         }
+    }
+    assert result == {
+        "query": "python",
+        "total": 25,
+        "page": 3,
+        "page_size": 10,
+        "results": [],
     }

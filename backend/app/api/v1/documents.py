@@ -8,6 +8,7 @@ from backend.app.db.session import get_db_session
 from backend.app.schemas.document import DocumentUploadResponse
 from backend.app.services.document_processing import process_document
 from backend.app.services.document_upload import (
+    delete_saved_document,
     save_document,
     validate_and_measure_file,
 )
@@ -47,6 +48,7 @@ async def upload_document(
     try:
         await index_document_chunks(document, processing_result.chunks)
     except SearchIndexUnavailableError as error:
+        await delete_saved_document(document, session)
         raise search_index_error() from error
 
     return DocumentUploadResponse(

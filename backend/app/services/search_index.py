@@ -114,14 +114,21 @@ async def index_document_chunks(
         ) from error
 
 
-async def search_documents(query: str) -> list[dict[str, Any]]:
+async def search_documents(
+    query: str,
+    page: int,
+    page_size: int,
+) -> dict[str, Any]:
     await ensure_documents_index()
     client = get_search_client()
+    offset = (page - 1) * page_size
 
     try:
         response = await client.post(
             f"/{settings.elasticsearch_index}/_search",
             json={
+                "from": offset,
+                "size": page_size,
                 "query": {
                     "multi_match": {
                         "query": query,
@@ -137,16 +144,29 @@ async def search_documents(query: str) -> list[dict[str, Any]]:
         ) from error
 
     response_body = response.json()
-    return [
-        {
-            "chunk_id": hit["_source"]["chunk_id"],
-            "file_name": hit["_source"]["file_name"],
-            "page": hit["_source"]["page_number"],
-            "text": hit["_source"]["text"],
-            "score": hit["_score"],
-        }
-        for hit in response_body["hits"]["hits"]
-    ]
+    hits = response_body["hits"]
+    total = hits["total"]
+    if isinstance(total, dict):
+        total_value = total["value"]
+    else:
+        total_value = total
+
+    return {
+        "query": query,
+        "total": total_value,
+        "page": page,
+        "page_size": page_size,
+        "results": [
+            {
+                "chunk_id": hit["_source"]["chunk_id"],
+                "file_name": hit["_source"]["file_name"],
+                "page": hit["_source"]["page_number"],
+                "text": hit["_source"]["text"],
+                "score": hit["_score"],
+            }
+            for hit in hits["hits"]
+        ],
+    }
 
 
 def search_index_error() -> HTTPException:
