@@ -29,8 +29,18 @@ test("returns original text when query is empty", () => {
   expect(result).toBe("Some text");
 });
 
-test("escapes HTML characters", () => {
-  const result = highlightQuery("<script>alert('xss')</script>", "script");
-  expect(result).toContain("&lt;script&gt;");
+test("escapes HTML characters while highlighting matches", () => {
+  const result = highlightQuery(
+    "<script>alert('xss')</script>",
+    "script",
+  );
+
+  expect(result).not.toContain("<script>");
+  expect(result).not.toContain("</script>");
+  expect(result).toContain("&lt;");
+  expect(result).toContain("&gt;");
+  expect(result).toContain(
+    '<mark class="highlight">script</mark>',
+  );
   expect(result).toContain("alert('xss')");
 });
