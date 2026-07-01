@@ -1,14 +1,13 @@
-
 import { useCallback, useEffect, useState } from "react";
 import type { Document } from "../api/client";
 import { fetchDocument, fetchDocuments, HttpError } from "../api/client";
 import { DocumentList, FileUpload } from "../components/FileUpload";
-import { ErrorDisplay } from "../components/ErrorDisplay"; 
+import { ErrorDisplay } from "../components/ErrorDisplay";
 
 export default function HomePage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | HttpError | string | null>(null); 
+  const [error, setError] = useState<Error | HttpError | string | null>(null);
 
   const loadDocuments = useCallback(async () => {
     setError(null);
@@ -40,7 +39,7 @@ export default function HomePage() {
       const updated = await Promise.all(
         pending.map(async (doc) => {
           try {
-            return await fetchDocument(doc.document_id);
+            return await fetchDocument(doc.uuid);
           } catch {
             return doc;
           }
@@ -49,7 +48,7 @@ export default function HomePage() {
 
       setDocuments((prev) =>
         prev.map((doc) => {
-          const refreshed = updated.find((item) => item.document_id === doc.document_id);
+          const refreshed = updated.find((item) => item.uuid === doc.uuid);
           return refreshed || doc;
         }),
       );
@@ -62,10 +61,9 @@ export default function HomePage() {
     <div className="page">
       <h1>Главная страница</h1>
       <p className="page__subtitle">Загрузите PDF или DOCX для полнотекстового поиска</p>
-      
 
       {error && <ErrorDisplay error={error} onRetry={loadDocuments} />}
-      
+
       <FileUpload documents={documents} onUploaded={loadDocuments} />
       <DocumentList documents={documents} loading={loading} />
     </div>
