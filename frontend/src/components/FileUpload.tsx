@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import type { Document } from "../api/client";
 import { uploadDocument, HttpError } from "../api/client";
 import { formatDate, getStatusLabel } from "../utils/highlight";
-import { ErrorDisplay } from "./ErrorDisplay"; 
+import { ErrorDisplay } from "./ErrorDisplay";
 
 interface FileUploadProps {
   documents: Document[];
@@ -10,7 +10,8 @@ interface FileUploadProps {
 }
 
 interface UploadItem {
-  id: string;
+  id: string;           
+  tempId?: string;      
   fileName: string;
   progress: number;
   status: Document["status"] | "uploading";
@@ -21,17 +22,16 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
-  const [globalError, setGlobalError] = useState<Error | HttpError | string | null>(null); 
+  const [globalError, setGlobalError] = useState<Error | HttpError | string | null>(null);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
-      setGlobalError(null); 
-      
+      setGlobalError(null);
+
       const fileArray = Array.from(files).filter((file) => {
         const name = file.name.toLowerCase();
         return name.endsWith(".pdf") || name.endsWith(".docx");
       });
-
 
       if (fileArray.length === 0) {
         setGlobalError("Поддерживаются только файлы формата PDF и DOCX");
@@ -43,7 +43,8 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         setUploads((prev) => [
           ...prev,
           {
-            id: tempId,
+            id: tempId, 
+            tempId,
             fileName: file.name,
             progress: 10,
             status: "uploading",
@@ -53,18 +54,19 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         try {
           setUploads((prev) =>
             prev.map((item) =>
-              item.id === tempId ? { ...item, progress: 50, status: "uploaded" } : item,
+              item.tempId === tempId ? { ...item, progress: 50, status: "uploaded" } : item,
             ),
           );
 
           const response = await uploadDocument(file);
 
+
           setUploads((prev) =>
             prev.map((item) =>
-              item.id === tempId
+              item.tempId === tempId
                 ? {
                     ...item,
-                    id: response.document_id,
+                    id: response.uuid, 
                     progress: 80,
                     status: "indexing",
                   }
@@ -94,12 +96,11 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
             errorMessage = error.message;
           }
 
-
           setGlobalError(errorMessage);
 
           setUploads((prev) =>
             prev.map((item) =>
-              item.id === tempId
+              item.tempId === tempId
                 ? {
                     ...item,
                     progress: 100,
@@ -115,8 +116,9 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
     [onUploaded],
   );
 
+
   const syncedUploads = uploads.map((item) => {
-    const doc = documents.find((document) => document.document_id === item.id);
+    const doc = documents.find((document) => document.uuid === item.id);
     if (!doc) {
       return item;
     }
@@ -139,12 +141,11 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
   return (
     <section className="upload-section card">
       <h2>Загрузка документов</h2>
-      
 
       {globalError && (
         <ErrorDisplay error={globalError} onRetry={() => setGlobalError(null)} />
       )}
-      
+
       <div
         className={`dropzone ${dragOver ? "dropzone--active" : ""}`}
         onDragOver={(event) => {
@@ -192,7 +193,9 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
             <li key={item.id} className="upload-item">
               <div className="upload-item__header">
                 <span>{item.fileName}</span>
-                <span className={`status status--${item.status}`}>{getStatusLabel(item.status)}</span>
+                <span className={`status status--${item.status}`}>
+                  {getStatusLabel(item.status)}
+                </span>
               </div>
               <div className="progress">
                 <div
@@ -234,12 +237,14 @@ export function DocumentList({ documents, loading }: DocumentListProps) {
       <h2>Загруженные документы</h2>
       <ul className="document-list">
         {documents.map((doc) => (
-          <li key={doc.document_id} className="document-item">
+          <li key={doc.uuid} className="document-item">
             <div>
               <strong>{doc.file_name}</strong>
-              <p className="muted">{formatDate(doc.uploaded_at)}</p>
+              <p className="muted">{formatDate(doc.created_at)}</p>
             </div>
-            <span className={`status status--${doc.status}`}>{getStatusLabel(doc.status)}</span>
+            <span className={`status status--${doc.status}`}>
+              {getStatusLabel(doc.status)}
+            </span>
           </li>
         ))}
       </ul>
