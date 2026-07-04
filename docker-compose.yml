@@ -53,6 +53,19 @@ services:
       retries: 10
       start_period: 40s
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+    ports:
+      - "${REDIS_PORT}:6379"
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   elasticsearch_data:

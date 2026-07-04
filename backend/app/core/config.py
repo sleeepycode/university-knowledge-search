@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     chunk_overlap: int = 100
     elasticsearch_url: str = "http://localhost:9200"
     elasticsearch_index: str = "documents"
+    redis_url: str = "redis://localhost:6379/0"
+    search_cache_ttl_seconds: int = 5 * 60
 
     postgres_host: str = "localhost"
     postgres_port: int = 5432

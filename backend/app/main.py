@@ -7,6 +7,7 @@ from backend.app.api.v1.router import api_router
 from backend.app.core.config import settings
 from backend.app.services.search_index import (
     SearchIndexUnavailableError,
+    close_cache_client,
     close_search_client,
     ensure_documents_index,
 )
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
     yield
 
     await close_search_client()
+    await close_cache_client()
 
 
 def create_app() -> FastAPI:
