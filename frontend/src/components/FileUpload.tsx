@@ -10,8 +10,8 @@ interface FileUploadProps {
 }
 
 interface UploadItem {
-  id: string;           
-  tempId?: string;      
+  id: string;
+  tempId?: string;
   fileName: string;
   progress: number;
   status: Document["status"] | "uploading";
@@ -43,7 +43,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         setUploads((prev) => [
           ...prev,
           {
-            id: tempId, 
+            id: tempId,
             tempId,
             fileName: file.name,
             progress: 10,
@@ -66,7 +66,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
               item.tempId === tempId
                 ? {
                     ...item,
-                    id: response.uuid, 
+                    id: response.uuid,
                     progress: 80,
                     status: "indexing",
                   }

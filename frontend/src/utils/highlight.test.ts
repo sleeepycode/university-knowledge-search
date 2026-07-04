@@ -53,7 +53,7 @@ describe("getStatusLabel", () => {
   test("returns localized labels", () => {
     expect(getStatusLabel("ready")).toBe("Готово");
     expect(getStatusLabel("indexing")).toBe("Индексация...");
-    expect(getStatusLabel("uploaded")).toBe("Загружено"); 
+    expect(getStatusLabel("uploaded")).toBe("Загружено");
     expect(getStatusLabel("failed")).toBe("Ошибка");
     expect(getStatusLabel("unknown")).toBe("unknown");
   });

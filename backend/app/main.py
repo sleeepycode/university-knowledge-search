@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+import logging
 from time import perf_counter
 
 from fastapi import FastAPI, Request, Response
@@ -9,10 +11,31 @@ from backend.app.metrics import (
     SEARCH_REQUESTS,
     SEARCH_RESPONSE_DURATION,
 )
+from backend.app.services.search_index import (
+    SearchIndexUnavailableError,
+    close_cache_client,
+    close_search_client,
+    ensure_documents_index,
+)
+
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        await ensure_documents_index()
+    except SearchIndexUnavailableError:
+        logger.warning("Elasticsearch index was not initialized")
+
+    yield
+
+    await close_search_client()
+    await close_cache_client()
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.app_name)
+    app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
     app.include_router(
         api_router,

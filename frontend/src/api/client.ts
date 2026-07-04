@@ -1,17 +1,17 @@
 // --- Интерфейсы согласно новому контракту ---
 
 export interface Document {
-  id: number;              
-  uuid: string;            
+  id: number;
+  uuid: string;
   file_name: string;
-  created_at: string;      
+  created_at: string;
   status: "uploaded" | "indexing" | "ready" | "failed";
   chunks_count?: number;
 }
 
 export interface UploadResponse {
-  id: number;              
-  uuid: string;            
+  id: number;
+  uuid: string;
   file_name: string;
   status: string;
   message: string;
@@ -19,7 +19,7 @@ export interface UploadResponse {
 
 // SearchResult - результаты поиска по чанкам
 export interface SearchResult {
-  chunk_id: string;        
+  chunk_id: string;
   file_name: string;
   page: number;
   text: string;

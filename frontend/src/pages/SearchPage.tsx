@@ -4,7 +4,7 @@ import type { SearchHistoryItem, SearchResponse } from "../api/client";
 import { fetchSearchHistory, searchDocuments } from "../api/client";
 import { Pagination, SearchResultCard } from "../components/SearchResult";
 
-const PAGE_SIZE = 10; 
+const PAGE_SIZE = 10;
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
