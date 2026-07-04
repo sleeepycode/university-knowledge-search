@@ -29,7 +29,7 @@ def test_metrics_endpoint_with_multiple_different_requests() -> None:
         response = client.get("/api/v1/search?query=test")
         if response.status_code != 405: 
             client.get("/api/v1/search?query=another")
-    except:
+    except Exception:
         pass
     
     # Выполняем POST запросы
@@ -59,7 +59,7 @@ def test_metrics_endpoint_handles_concurrent_requests() -> None:
     def make_request() -> None:
         try:
             client.post("/api/v1/search", json={"query": "concurrent test"})
-        except:
+        except Exception:
             pass
     
     # Выполняем 10 конкурентных запросов
@@ -103,7 +103,7 @@ def test_metrics_endpoint_returns_correct_prometheus_format() -> None:
     try:
         client.post("/api/v1/search", json={"query": "format test"})
         client.post("/api/v1/search", json={"query": "another test"})
-    except:
+    except Exception:
         pass
     
     response = client.get("/metrics")
@@ -150,7 +150,7 @@ def test_metrics_endpoint_with_invalid_search_requests() -> None:
             response = client.post("/api/v1/search", json=query)
             # Просто проверяем, что запрос не вызвал исключение
             assert response.status_code in [200, 400, 422, 405]
-        except:
+        except Exception:
             pass
     
     # Проверяем, что метрики все еще доступны
@@ -165,17 +165,14 @@ def test_metrics_endpoint_response_time_metrics() -> None:
     
     # Делаем запрос с задержкой 
     try:
-        start = time.time()
         client.post("/api/v1/search", json={"query": "slow test"})
-        elapsed = time.time() - start
-    except:
-        elapsed = 0
+    except Exception:
+        pass  
     
     response = client.get("/metrics")
     assert response.status_code == 200
     
     content = response.text
-    
     # Проверяем наличие метрик длительности
     if "search_response_duration_seconds_sum" in content:
         # Извлекаем значение sum
