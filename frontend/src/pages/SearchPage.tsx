@@ -15,14 +15,14 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
-  // Загрузка истории при монтировании
+
   useEffect(() => {
     void fetchSearchHistory()
       .then(setHistory)
       .catch(() => setHistory([]));
   }, []);
 
-  // Основная функция поиска
+
   const runSearch = useCallback(async () => {
     const trimmedQuery = submittedQuery.trim();
     if (!trimmedQuery) {
@@ -48,11 +48,11 @@ export default function SearchPage() {
       const historyData = await fetchSearchHistory();
       setHistory(historyData);
     } catch {
-      // История не загрузилась — игнорируем
+
     }
   }, [submittedQuery, page]);
 
-  // Запуск поиска при изменении запроса или страницы
+
   useEffect(() => {
     void runSearch();
   }, [runSearch]);

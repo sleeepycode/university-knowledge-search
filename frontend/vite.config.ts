@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    globals: true,
   },
   server: {
     port: 3000,
@@ -12,6 +13,17 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
+      },
+    },
+  },
+  build: {
+    outDir: "dist",
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+        },
       },
     },
   },

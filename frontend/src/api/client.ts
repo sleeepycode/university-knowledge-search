@@ -1,21 +1,25 @@
+// --- Интерфейсы согласно новому контракту ---
+
 export interface Document {
-  document_id: string;
+  id: number;
+  uuid: string;
   file_name: string;
-  uploaded_at: string;
+  created_at: string;
   status: "uploaded" | "indexing" | "ready" | "failed";
   chunks_count?: number;
 }
 
 export interface UploadResponse {
-  document_id: string;
+  id: number;
+  uuid: string;
   file_name: string;
   status: string;
   message: string;
 }
 
+// SearchResult - результаты поиска по чанкам
 export interface SearchResult {
   chunk_id: string;
-  document_id: string;
   file_name: string;
   page: number;
   text: string;
@@ -60,7 +64,7 @@ export class HttpError extends Error {
     Object.setPrototypeOf(this, HttpError.prototype);
   }
 
-  // Вспомогательные методы для проверки статуса
+
   isNotFound(): boolean {
     return this.status === 404;
   }
@@ -85,7 +89,7 @@ export class HttpError extends Error {
     return this.status === 409;
   }
 
-  // Человекочитаемое описание ошибки
+
   getUserMessage(): string {
     const messages: Record<number, string> = {
       400: "Неверный запрос. Проверьте введенные данные.",
@@ -113,9 +117,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(`${API_BASE}${path}`, options);
 
-    // Обработка успешного ответа (2xx)
+
     if (response.ok) {
-      // Для 204 No Content возвращаем null
+
       if (response.status === 204) {
         return null as T;
       }
@@ -134,7 +138,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       errorMessage = response.statusText || `HTTP ${response.status}`;
     }
 
-    // Формируем осмысленное сообщение в зависимости от статуса
+
     let userMessage = errorMessage;
     switch (response.status) {
       case 400:
@@ -174,7 +178,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       errorData.errors,
     );
   } catch (error) {
-    // Перехватываем сетевые ошибки (нет соединения с сервером)
+
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new HttpError(
         0,
@@ -183,12 +187,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       );
     }
 
-    // Если ошибка уже HttpError — пробрасываем дальше
+
     if (error instanceof HttpError) {
       throw error;
     }
 
-    // Любые другие ошибки
+
     throw new HttpError(
       500,
       error instanceof Error ? error.message : "Неизвестная ошибка",
@@ -196,7 +200,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 }
 
-// --- API-функции с обработкой ошибок ---
+// --- API-функции ---
 
 export async function uploadDocument(file: File): Promise<UploadResponse> {
   const formData = new FormData();
@@ -212,9 +216,11 @@ export async function fetchDocuments(): Promise<Document[]> {
   return data.documents;
 }
 
+
 export async function fetchDocument(documentId: string): Promise<Document> {
   return request<Document>(`/documents/${documentId}`);
 }
+
 
 export async function searchDocuments(
   query: string,
