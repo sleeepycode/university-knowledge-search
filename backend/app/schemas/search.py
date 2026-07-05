@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -15,3 +17,13 @@ class SearchResponse(BaseModel):
     page: int
     page_size: int
     results: list[SearchResult]
+
+
+class SearchHistoryItem(BaseModel):
+    query: str
+    searched_at: datetime
+    results_count: int
+
+
+class SearchHistoryResponse(BaseModel):
+    history: list[SearchHistoryItem]
