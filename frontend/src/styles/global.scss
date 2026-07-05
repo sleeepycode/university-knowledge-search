@@ -202,7 +202,6 @@ input {
   }
 
   &--indexing,
-  &--uploaded,
   &--uploading {
     background: $color-warning;
   }
@@ -221,7 +220,6 @@ input {
     color: $color-danger;
   }
 
-  &--uploaded,
   &--indexing,
   &--uploading {
     color: $color-warning;
@@ -377,7 +375,6 @@ mark.highlight {
   }
 }
 
-
 .error-card {
   display: flex;
   align-items: flex-start;
@@ -429,7 +426,6 @@ mark.highlight {
     align-self: flex-start;
   }
 
-  // Варианты по статусам
   &.error {
     background: #fef2f2;
     border-color: #fca5a5;

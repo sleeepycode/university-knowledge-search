@@ -1,4 +1,3 @@
-
 import { HttpError } from "../api/client";
 
 interface ErrorDisplayProps {

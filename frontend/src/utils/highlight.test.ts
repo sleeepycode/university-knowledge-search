@@ -23,14 +23,10 @@ describe("highlightQuery", () => {
 
   test("escapes HTML characters", () => {
     const result = highlightQuery("<script>alert('xss')</script>", "script");
-    // Проверяем, что теги экранированы
     expect(result).toContain("&lt;");
     expect(result).toContain("&gt;");
-    // Проверяем, что слово подсвечено
     expect(result).toContain('<mark class="highlight">script</mark>');
-    // Проверяем, что содержимое внутри тегов сохранилось
     expect(result).toContain("alert('xss')");
-    // Проверяем полный результат
     expect(result).toBe(
       '&lt;<mark class="highlight">script</mark>&gt;alert(\'xss\')&lt;/<mark class="highlight">script</mark>&gt;'
     );
@@ -53,7 +49,7 @@ describe("getStatusLabel", () => {
   test("returns localized labels", () => {
     expect(getStatusLabel("ready")).toBe("Готово");
     expect(getStatusLabel("indexing")).toBe("Индексация...");
-    expect(getStatusLabel("uploaded")).toBe("Загружено"); 
+    expect(getStatusLabel("uploading")).toBe("Загрузка...");
     expect(getStatusLabel("failed")).toBe("Ошибка");
     expect(getStatusLabel("unknown")).toBe("unknown");
   });

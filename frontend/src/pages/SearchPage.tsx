@@ -1,10 +1,9 @@
-// src/pages/SearchPage.tsx
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import type { SearchHistoryItem, SearchResponse } from "../api/client";
 import { fetchSearchHistory, searchDocuments } from "../api/client";
 import { Pagination, SearchResultCard } from "../components/SearchResult";
 
-const PAGE_SIZE = 10; 
+const PAGE_SIZE = 10;
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -15,13 +14,11 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
-
   useEffect(() => {
     void fetchSearchHistory()
       .then(setHistory)
       .catch(() => setHistory([]));
   }, []);
-
 
   const runSearch = useCallback(async () => {
     const trimmedQuery = submittedQuery.trim();
@@ -43,15 +40,12 @@ export default function SearchPage() {
       setLoading(false);
     }
 
-    // Загружаем историю отдельно, чтобы ошибка истории не ломала результаты поиска
     try {
       const historyData = await fetchSearchHistory();
       setHistory(historyData);
     } catch {
-
     }
   }, [submittedQuery, page]);
-
 
   useEffect(() => {
     void runSearch();
