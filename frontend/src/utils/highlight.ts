@@ -38,7 +38,6 @@ function escapeHtml(value: string): string {
 export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     uploading: "Загрузка...",
-    indexing: "Индексация...",
     ready: "Готово",
     failed: "Ошибка",
   };
