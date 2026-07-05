@@ -161,7 +161,6 @@ def test_metrics_endpoint_with_invalid_search_requests() -> None:
 
 def test_metrics_endpoint_response_time_metrics() -> None:
     """Проверяем, что метрики времени ответа обновляются"""
-    import time
     
     # Делаем запрос с задержкой 
     try:
