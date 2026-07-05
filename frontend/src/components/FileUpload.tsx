@@ -245,7 +245,7 @@ export function DocumentList({ documents, loading }: DocumentListProps) {
               <p className="muted">
                 {formatDate(doc.created_at)}
                 {doc.chunks_count !== undefined && doc.chunks_count > 0 && (
-                  <span> · {doc.chunks_count} чанков</span>
+                  <span> · {doc.chunks_count}чанков</span>
                 )}
               </p>
             </div>
