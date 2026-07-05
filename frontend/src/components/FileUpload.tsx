@@ -70,8 +70,8 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
                 ? {
                     ...item,
                     id: response.uuid,
-                    progress: 100,
-                    status: "ready",
+                    progress: 80,
+                    status: "indexing",
                   }
                 : item,
             ),
