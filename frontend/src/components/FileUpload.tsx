@@ -41,7 +41,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
       for (const file of fileArray) {
         const tempId = crypto.randomUUID();
 
-        // Начало загрузки - uploading (только UX)
+
         setUploads((prev) => [
           ...prev,
           {
@@ -56,7 +56,6 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         try {
           const response = await uploadDocument(file);
 
-          // Сервер вернул 201 - статус ready (бэкенд синхронно обрабатывает и индексирует)
           setUploads((prev) =>
             prev.map((item) =>
               item.tempId === tempId

@@ -202,8 +202,6 @@ export async function fetchDocuments(): Promise<Document[]> {
   return data.documents;
 }
 
-// Удален fetchDocument - нет такого эндпоинта в бэкенде
-
 export async function searchDocuments(
   query: string,
   page = 1,
