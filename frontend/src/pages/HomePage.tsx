@@ -30,7 +30,7 @@ export default function HomePage() {
   useEffect(() => {
     const interval = setInterval(async () => {
       const pending = documents.filter(
-        (doc) => doc.status === "uploaded" || doc.status === "indexing",
+        (doc) => doc.status === "indexing",
       );
       if (pending.length === 0) {
         return;
