@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Document } from "../api/client";
-import { fetchDocument, fetchDocuments, HttpError } from "../api/client";
+import { fetchDocuments, HttpError } from "../api/client";
 import { DocumentList, FileUpload } from "../components/FileUpload";
 import { ErrorDisplay } from "../components/ErrorDisplay";
 
@@ -26,36 +26,6 @@ export default function HomePage() {
   useEffect(() => {
     void loadDocuments();
   }, [loadDocuments]);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const pending = documents.filter(
-        (doc) => doc.status === "indexing",
-      );
-      if (pending.length === 0) {
-        return;
-      }
-
-      const updated = await Promise.all(
-        pending.map(async (doc) => {
-          try {
-            return await fetchDocument(doc.uuid);
-          } catch {
-            return doc;
-          }
-        }),
-      );
-
-      setDocuments((prev) =>
-        prev.map((doc) => {
-          const refreshed = updated.find((item) => item.uuid === doc.uuid);
-          return refreshed || doc;
-        }),
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [documents]);
 
   return (
     <div className="page">

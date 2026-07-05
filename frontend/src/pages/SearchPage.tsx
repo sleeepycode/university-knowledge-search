@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import type { SearchHistoryItem, SearchResponse } from "../api/client";
-import { fetchSearchHistory, searchDocuments } from "../api/client";
+import type { SearchResponse } from "../api/client";
+import { searchDocuments } from "../api/client";
 import { Pagination, SearchResultCard } from "../components/SearchResult";
 
 const PAGE_SIZE = 10;
@@ -12,13 +12,6 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
-
-  useEffect(() => {
-    void fetchSearchHistory()
-      .then(setHistory)
-      .catch(() => setHistory([]));
-  }, []);
 
   const runSearch = useCallback(async () => {
     const trimmedQuery = submittedQuery.trim();
@@ -35,15 +28,8 @@ export default function SearchPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка поиска");
       setResults(null);
-      return;
     } finally {
       setLoading(false);
-    }
-
-    try {
-      const historyData = await fetchSearchHistory();
-      setHistory(historyData);
-    } catch {
     }
   }, [submittedQuery, page]);
 
@@ -59,12 +45,6 @@ export default function SearchPage() {
 
   const handleRetry = () => {
     void runSearch();
-  };
-
-  const handleHistoryClick = (historyQuery: string) => {
-    setQuery(historyQuery);
-    setSubmittedQuery(historyQuery);
-    setPage(1);
   };
 
   return (
@@ -89,25 +69,6 @@ export default function SearchPage() {
           </button>
         </div>
       </form>
-
-      {history.length > 0 && (
-        <section className="card history">
-          <h2>История поиска</h2>
-          <ul className="history__list">
-            {history.map((item, index) => (
-              <li key={`${item.query}-${item.searched_at}-${index}`}>
-                <button
-                  type="button"
-                  className="history__item"
-                  onClick={() => handleHistoryClick(item.query)}
-                >
-                  {item.query}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {loading && <div className="card">Поиск...</div>}
 

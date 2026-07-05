@@ -1,16 +1,22 @@
-// --- Интерфейсы согласно новому контракту ---
+// --- Интерфейсы согласно реальному контракту бэкенда ---
 
 export interface Document {
   id: number;
   uuid: string;
   file_name: string;
   created_at: string;
-  status: "indexing" | "ready" | "failed";
-  chunks_count: number;
+  status: "ready";
 }
 
-export interface UploadResponse extends Document {
+export interface UploadResponse {
+  id: number;
+  uuid: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  status: string;
   extracted_characters: number;
+  chunks_count: number;
 }
 
 // SearchResult - результаты поиска по чанкам
@@ -28,12 +34,6 @@ export interface SearchResponse {
   page: number;
   page_size: number;
   results: SearchResult[];
-}
-
-export interface SearchHistoryItem {
-  query: string;
-  searched_at: string;
-  results_count: number;
 }
 
 export interface ApiError {
@@ -202,9 +202,7 @@ export async function fetchDocuments(): Promise<Document[]> {
   return data.documents;
 }
 
-export async function fetchDocument(documentId: string): Promise<Document> {
-  return request<Document>(`/documents/${documentId}`);
-}
+// Удален fetchDocument - нет такого эндпоинта в бэкенде
 
 export async function searchDocuments(
   query: string,
@@ -219,7 +217,3 @@ export async function searchDocuments(
   return request<SearchResponse>(`/search?${params.toString()}`);
 }
 
-export async function fetchSearchHistory(): Promise<SearchHistoryItem[]> {
-  const data = await request<{ history: SearchHistoryItem[] }>("/search/history");
-  return data.history;
-}

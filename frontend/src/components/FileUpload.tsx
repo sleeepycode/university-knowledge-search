@@ -14,7 +14,7 @@ interface UploadItem {
   tempId?: string;
   fileName: string;
   progress: number;
-  status: Document["status"] | "uploading";
+  status: "uploading" | "ready" | "failed";
   error?: string;
 }
 
@@ -41,7 +41,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
       for (const file of fileArray) {
         const tempId = crypto.randomUUID();
 
-        // Начало загрузки - uploading
+        // Начало загрузки - uploading (только UX)
         setUploads((prev) => [
           ...prev,
           {
@@ -54,24 +54,17 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         ]);
 
         try {
-          // Процесс загрузки - indexing
-          setUploads((prev) =>
-            prev.map((item) =>
-              item.tempId === tempId ? { ...item, progress: 50, status: "indexing" } : item,
-            ),
-          );
-
           const response = await uploadDocument(file);
 
-          // Сервер вернул 201 - ready
+          // Сервер вернул 201 - статус ready (бэкенд синхронно обрабатывает и индексирует)
           setUploads((prev) =>
             prev.map((item) =>
               item.tempId === tempId
                 ? {
                     ...item,
                     id: response.uuid,
-                    progress: 80,
-                    status: "indexing",
+                    progress: 100,
+                    status: "ready",
                   }
                 : item,
             ),
@@ -90,8 +83,12 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
               errorMessage = "Файл слишком большой. Максимальный размер: 20 МБ.";
             } else if (error.status === 415) {
               errorMessage = "Неподдерживаемый формат файла. Используйте PDF или DOCX.";
+            } else if (error.status === 422) {
+              errorMessage = "Не удалось извлечь текст из документа. Проверьте файл.";
             } else if (error.status === 500) {
               errorMessage = "Ошибка сервера при обработке файла. Попробуйте позже.";
+            } else if (error.status === 503) {
+              errorMessage = "Сервис индексации временно недоступен. Попробуйте позже.";
             } else {
               errorMessage = error.getUserMessage();
             }
@@ -126,17 +123,10 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
       return item;
     }
 
-    const progressByStatus: Record<Document["status"] | "uploading", number> = {
-      uploading: 30,
-      indexing: 80,
-      ready: 100,
-      failed: 100,
-    };
-
     return {
       ...item,
-      status: doc.status,
-      progress: progressByStatus[doc.status] || item.progress,
+      status: doc.status as "ready" | "failed",
+      progress: 100,
     };
   });
 
@@ -242,12 +232,7 @@ export function DocumentList({ documents, loading }: DocumentListProps) {
           <li key={doc.uuid} className="document-item">
             <div>
               <strong>{doc.file_name}</strong>
-              <p className="muted">
-                {formatDate(doc.created_at)}
-                {doc.chunks_count !== undefined && doc.chunks_count > 0 && (
-                  <span> · {doc.chunks_count}чанков</span>
-                )}
-              </p>
+              <p className="muted">{formatDate(doc.created_at)}</p>
             </div>
             <span className={`status status--${doc.status}`}>
               {getStatusLabel(doc.status)}

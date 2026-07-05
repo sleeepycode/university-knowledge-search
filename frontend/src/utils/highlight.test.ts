@@ -48,7 +48,6 @@ describe("highlightQuery", () => {
 describe("getStatusLabel", () => {
   test("returns localized labels", () => {
     expect(getStatusLabel("ready")).toBe("Готово");
-    expect(getStatusLabel("indexing")).toBe("Индексация...");
     expect(getStatusLabel("uploading")).toBe("Загрузка...");
     expect(getStatusLabel("failed")).toBe("Ошибка");
     expect(getStatusLabel("unknown")).toBe("unknown");
