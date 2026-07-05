@@ -5,16 +5,12 @@ export interface Document {
   uuid: string;
   file_name: string;
   created_at: string;
-  status: "uploaded" | "indexing" | "ready" | "failed";
-  chunks_count?: number;
+  status: "indexing" | "ready" | "failed";
+  chunks_count: number;
 }
 
-export interface UploadResponse {
-  id: number;
-  uuid: string;
-  file_name: string;
-  status: string;
-  message: string;
+export interface UploadResponse extends Document {
+  extracted_characters: number;
 }
 
 // SearchResult - результаты поиска по чанкам
@@ -64,7 +60,6 @@ export class HttpError extends Error {
     Object.setPrototypeOf(this, HttpError.prototype);
   }
 
-
   isNotFound(): boolean {
     return this.status === 404;
   }
@@ -88,7 +83,6 @@ export class HttpError extends Error {
   isConflict(): boolean {
     return this.status === 409;
   }
-
 
   getUserMessage(): string {
     const messages: Record<number, string> = {
@@ -117,16 +111,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(`${API_BASE}${path}`, options);
 
-
     if (response.ok) {
-
       if (response.status === 204) {
         return null as T;
       }
       return response.json();
     }
 
-    // --- Обработка ошибок по HTTP-статусам ---
     let errorData: any = {};
     let errorMessage = "Request failed";
 
@@ -134,10 +125,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       errorData = await response.json();
       errorMessage = errorData.detail || errorData.message || errorData.error || "Request failed";
     } catch {
-      // Если тело ответа не JSON
       errorMessage = response.statusText || `HTTP ${response.status}`;
     }
-
 
     let userMessage = errorMessage;
     switch (response.status) {
@@ -178,7 +167,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       errorData.errors,
     );
   } catch (error) {
-
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new HttpError(
         0,
@@ -187,11 +175,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       );
     }
 
-
     if (error instanceof HttpError) {
       throw error;
     }
-
 
     throw new HttpError(
       500,
@@ -216,11 +202,9 @@ export async function fetchDocuments(): Promise<Document[]> {
   return data.documents;
 }
 
-
 export async function fetchDocument(documentId: string): Promise<Document> {
   return request<Document>(`/documents/${documentId}`);
 }
-
 
 export async function searchDocuments(
   query: string,

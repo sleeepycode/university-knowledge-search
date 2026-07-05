@@ -40,6 +40,8 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
 
       for (const file of fileArray) {
         const tempId = crypto.randomUUID();
+
+        // Начало загрузки - uploading
         setUploads((prev) => [
           ...prev,
           {
@@ -52,15 +54,16 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
         ]);
 
         try {
+          // Процесс загрузки - indexing
           setUploads((prev) =>
             prev.map((item) =>
-              item.tempId === tempId ? { ...item, progress: 50, status: "uploaded" } : item,
+              item.tempId === tempId ? { ...item, progress: 50, status: "indexing" } : item,
             ),
           );
 
           const response = await uploadDocument(file);
 
-
+          // Сервер вернул 201 - ready
           setUploads((prev) =>
             prev.map((item) =>
               item.tempId === tempId
@@ -98,6 +101,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
 
           setGlobalError(errorMessage);
 
+          // Ошибка - failed
           setUploads((prev) =>
             prev.map((item) =>
               item.tempId === tempId
@@ -116,7 +120,6 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
     [onUploaded],
   );
 
-
   const syncedUploads = uploads.map((item) => {
     const doc = documents.find((document) => document.uuid === item.id);
     if (!doc) {
@@ -125,7 +128,6 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
 
     const progressByStatus: Record<Document["status"] | "uploading", number> = {
       uploading: 30,
-      uploaded: 50,
       indexing: 80,
       ready: 100,
       failed: 100,
@@ -134,7 +136,7 @@ export function FileUpload({ documents, onUploaded }: FileUploadProps) {
     return {
       ...item,
       status: doc.status,
-      progress: progressByStatus[doc.status],
+      progress: progressByStatus[doc.status] || item.progress,
     };
   });
 
@@ -240,7 +242,12 @@ export function DocumentList({ documents, loading }: DocumentListProps) {
           <li key={doc.uuid} className="document-item">
             <div>
               <strong>{doc.file_name}</strong>
-              <p className="muted">{formatDate(doc.created_at)}</p>
+              <p className="muted">
+                {formatDate(doc.created_at)}
+                {doc.chunks_count !== undefined && doc.chunks_count > 0 && (
+                  <span> · {doc.chunks_count}чанков</span>
+                )}
+              </p>
             </div>
             <span className={`status status--${doc.status}`}>
               {getStatusLabel(doc.status)}
