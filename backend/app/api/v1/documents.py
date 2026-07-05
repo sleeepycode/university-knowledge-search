@@ -1,11 +1,17 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import settings
 from backend.app.db.session import get_db_session
-from backend.app.schemas.document import DocumentUploadResponse
+from backend.app.models.document import Document
+from backend.app.schemas.document import (
+    DocumentListItem,
+    DocumentListResponse,
+    DocumentUploadResponse,
+)
 from backend.app.services.document_processing import process_document
 from backend.app.services.document_upload import (
     delete_saved_document,
@@ -20,6 +26,27 @@ from backend.app.services.search_index import (
 
 router = APIRouter()
 DatabaseSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+
+@router.get("", response_model=DocumentListResponse)
+async def list_documents(session: DatabaseSession) -> DocumentListResponse:
+    result = await session.execute(
+        select(Document).order_by(Document.created_at.desc())
+    )
+    documents = result.scalars().all()
+
+    return DocumentListResponse(
+        documents=[
+            DocumentListItem(
+                id=document.id,
+                uuid=document.uuid,
+                file_name=document.file_name,
+                created_at=document.created_at,
+                status=document.status,
+            )
+            for document in documents
+        ]
+    )
 
 
 @router.post(
@@ -57,6 +84,7 @@ async def upload_document(
         file_name=document.file_name,
         file_path=document.file_path,
         created_at=document.created_at,
+        status=document.status,
         extracted_characters=len(processing_result.text),
         chunks_count=len(processing_result.chunks),
     )
