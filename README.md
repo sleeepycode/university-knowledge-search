@@ -480,3 +480,31 @@ docker compose logs app --tail=200
 ```text
 http://localhost:8000/docs
 ```
+# QA-инженер 
+
+## Технологический стек
+
+| Назначение | Инструмент |
+|------------|------------|
+| Юнит-тесты | `pytest`, `pytest-cov` |
+| E2E-тесты | `Playwright` |
+| Нагрузочные тесты | `locust` |
+| Работа с API | `requests` / `httpx` |
+| Документация | PDF |
+---
+
+##  Виды тестирования
+
+### 1. Юнит-тесты (QA-01)
+ **Команда:** `pytest --cov=backend --cov-report=term-missing --cov-report=xml --cov-fail-under=50`
+
+### 2. E2E-тесты (QA-02)
+**Запуск:** `pytest tests/e2e/test_document_flow.py --headed -v -s`
+
+##  Итоговые артефакты QA
+
+- [ ] Юнит-тесты (`tests/`)
+- [ ] E2E-тесты (`tests/e2e/`)
+- [ ] Тестовые данные (`tests/e2e/fixtures/`)
+- [ ] Нагрузочные тесты (`tests/locust_load/`)
+- [ ] Руководство пользователя (`USER_GUIDE.pdf`)
