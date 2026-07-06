@@ -35,3 +35,4 @@ temp/
 uploads/
 *.sqlite3
 ./backend
+.png
