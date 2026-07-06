@@ -511,7 +511,7 @@ http://localhost:8000/docs
 
 
 
-
+---
 
 
 > **Frontend-часть** веб-приложения для загрузки документов и полнотекстового поиска по внутренней базе знаний.
@@ -799,5 +799,4 @@ useEffect(() => {
 ## 📧 Контакты
 
 По вопросам, связанным с проектом, обращайтесь:
-- Email: [eastman19deni@gmail.com]
 - GitHub: [https://github.com/sleeepycode/university-knowledge-search]
